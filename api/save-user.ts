@@ -7,12 +7,22 @@ let client
 let clientPromise
 
 if (!global._mongoClientPromise) {
-  client = new MongoClient(uri)
+  client = new MongoClient(uri!)
   global._mongoClientPromise = client.connect()
 }
 clientPromise = global._mongoClientPromise
 
 export default async function handler(req, res) {
+  // ✅ CORS 헤더 추가
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+
+  // ✅ preflight 요청 처리 (OPTIONS 메서드 처리)
+  if (req.method === "OPTIONS") {
+    return res.status(200).end()
+  }
+
   if (req.method !== "POST") {
     return res.status(405).end("Method Not Allowed")
   }
