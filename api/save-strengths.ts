@@ -1,14 +1,15 @@
-// /api/save-strengths.ts
+// vercel-backend/api/save-strengths.ts
+
 import { MongoClient } from "mongodb"
 
-const uri = process.env.MONGODB_URI
-const dbName = process.env.MONGODB_DB
+const uri = process.env.MONGODB_URI!
+const dbName = process.env.MONGODB_DB!
 
 let client
 let clientPromise
 
 if (!global._mongoClientPromise) {
-  client = new MongoClient(uri!)
+  client = new MongoClient(uri)
   global._mongoClientPromise = client.connect()
 }
 clientPromise = global._mongoClientPromise
@@ -23,14 +24,13 @@ export default async function handler(req, res) {
   try {
     const client = await clientPromise
     const db = client.db(dbName)
-    const strengthsCol = db.collection("strengths") // 👉 저장할 컬렉션 이름
+    const strengthsCollection = db.collection("strengths")
 
-    await strengthsCol.insertOne({
-      email,
-      name,
-      strengths,
-      createdAt: new Date(),
-    })
+    await strengthsCollection.updateOne(
+      { email },
+      { $set: { name, strengths, updatedAt: new Date() } },
+      { upsert: true }
+    )
 
     res.status(200).json({ success: true })
   } catch (error) {
