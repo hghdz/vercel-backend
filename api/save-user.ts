@@ -1,5 +1,3 @@
-// api/save-user.js
-
 import { MongoClient } from "mongodb"
 
 const uri = process.env.MONGODB_URI
@@ -38,3 +36,4 @@ export default async function handler(req, res) {
     res.status(500).json({ success: false, error: error.message })
   }
 }
+
