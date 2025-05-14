@@ -15,10 +15,21 @@ if (!global._mongoClientPromise) {
 clientPromise = global._mongoClientPromise
 
 export default async function handler(req, res) {
+  // ✅ CORS preflight 요청 허용
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Credentials", "true")
+    res.setHeader("Access-Control-Allow-Origin", "*")
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+    return res.status(200).end()
+  }
+
+  // ✅ POST 외 메서드 차단
   if (req.method !== "POST") {
     return res.status(405).end("Method Not Allowed")
   }
 
+  // ✅ 실제 요청 처리
   const { email, name, strengths } = req.body
 
   try {
@@ -32,6 +43,7 @@ export default async function handler(req, res) {
       { upsert: true }
     )
 
+    res.setHeader("Access-Control-Allow-Origin", "*") // ✅ 응답에도 CORS 헤더 추가
     res.status(200).json({ success: true })
   } catch (error) {
     console.error("MongoDB 저장 실패:", error)
